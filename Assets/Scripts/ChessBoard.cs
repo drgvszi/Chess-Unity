@@ -39,8 +39,10 @@
         private bool isCameraRotated = false;
         private bool autoChangeCam = false;
 
+
+        //Base Unity methods
         void Start()
-        {   
+        {
             gameStarted = false;
         }
 
@@ -71,35 +73,18 @@
             UpdateUI();
         }
 
-        public void ClearTheTable()
+        // Mouse Handler
+        private Vector2Int TileIndex( GameObject hit )
         {
-            gameStarted = false;
-            winCondition = false;
-            deadW.Clear();
-            deadB.Clear();
-            DeathWhitePosition = new Vector3(-1.5f, 1f, -5f);
-            DeathBlackPosition = new Vector3(36.5f, 1f, 40f);
-            availableMoves.Clear();
-            resultText.gameObject.SetActive(false);
-            currentMove = null;
-            ClearBoardArray();
-            DestroyChessPieces();
-        }
-
-        public void ChangeTheAutomaticView(){
-            autoChangeCam = !autoChangeCam;
-        }
-
-        public void ChangeTheView()
-        {
-            isCameraRotated = !isCameraRotated;
-            Vector3 currentRotation = Camera.main.transform.rotation.eulerAngles;
-            float newYRotation = isCameraRotated ? 180.0f : 0.0f;
-            float newZPosition = isCameraRotated ? 35.0f : 0.0f;
-            Quaternion newRotation = Quaternion.Euler(currentRotation.x, newYRotation, currentRotation.z);
-            Vector3 newPosition = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, newZPosition);
-            Camera.main.transform.rotation = newRotation;
-            Camera.main.transform.position = newPosition;
+            for (int x = 0; x < boardSize; x++)
+            {
+                for (int y = 0; y < boardSize; y++)
+                {
+                    if (boardArray[x,y] == hit)
+                        return new Vector2Int(x,y);  
+                }
+            }
+            return -Vector2Int.one;
         }
 
         void HandleMouseDown()
@@ -125,6 +110,7 @@
                 }
             }
         }
+
         void HandleMouseUp()
         {
             if (currentMove != null)
@@ -148,6 +134,7 @@
                 }
             }
         }
+
         //Board and pieces management
         void HandlePieceSelection(Vector2Int selectedTile)
         {
@@ -175,7 +162,7 @@
         }
 
         private void createTiles()
-        {   
+        {
             for( int x = 0; x < boardSize; x++ )   
             {
                 for(int y = 0; y < boardSize; y++ )
@@ -185,21 +172,43 @@
                     boardArray[x, y].tag = "Tile";
                     boardArray[x,y].transform.parent = gameObject.transform;
                 }
-            } 
-                
+            }      
         }
 
-        private Vector2Int TileIndex( GameObject hit )
+        public void ClearTheTable()
+        {
+            gameStarted = false;
+            winCondition = false;
+            deadW.Clear();
+            deadB.Clear();
+            DeathWhitePosition = new Vector3(-1.5f, 1f, -5f);
+            DeathBlackPosition = new Vector3(36.5f, 1f, 40f);
+            availableMoves.Clear();
+            resultText.gameObject.SetActive(false);
+            currentMove = null;
+            ClearBoardArray();
+            DestroyChessPieces();
+        }
+
+        private void ClearBoardArray()
         {
             for (int x = 0; x < boardSize; x++)
             {
                 for (int y = 0; y < boardSize; y++)
                 {
-                    if (boardArray[x,y] == hit)
-                        return new Vector2Int(x,y);  
+                    Destroy(boardArray[x, y]);
+                    boardArray[x, y] = null;
                 }
             }
-            return -Vector2Int.one;
+        }
+
+        private void DestroyChessPieces()
+        {
+            ChessPiece[] chessPieces = FindObjectsOfType<ChessPiece>();
+            foreach (ChessPiece chessPiece in chessPieces)
+            {
+                Destroy(chessPiece.gameObject);
+            }
         }
 
         public ChessPiece spawnOnePiece(ChessPieceType type, int team)
@@ -259,27 +268,7 @@
                     }  
         }
 
-        private void ClearBoardArray()
-        {
-            for (int x = 0; x < boardSize; x++)
-            {
-                for (int y = 0; y < boardSize; y++)
-                {
-                    Destroy(boardArray[x, y]);
-                    boardArray[x, y] = null;
-                }
-            }
-        }
-
-        private void DestroyChessPieces()
-        {
-            ChessPiece[] chessPieces = FindObjectsOfType<ChessPiece>();
-            foreach (ChessPiece chessPiece in chessPieces)
-            {
-                Destroy(chessPiece.gameObject);
-            }
-        }
-
+        // Game Logic
         public bool IsCheck(int team)
         {
             // Find the position of the king for the specified team
@@ -541,6 +530,7 @@
             UpdateUI();
         }
 
+        //Visual
         private void UpdateUI()
         {   
             int opponentTeam = isWhiteTurn ? white : black;
@@ -630,6 +620,23 @@
             }
         }
 
+
+        // Camera management
+        public void ChangeTheAutomaticView(){
+            autoChangeCam = !autoChangeCam;
+        }
+
+        public void ChangeTheView()
+        {
+            isCameraRotated = !isCameraRotated;
+            Vector3 currentRotation = Camera.main.transform.rotation.eulerAngles;
+            float newYRotation = isCameraRotated ? 180.0f : 0.0f;
+            float newZPosition = isCameraRotated ? 35.0f : 0.0f;
+            Quaternion newRotation = Quaternion.Euler(currentRotation.x, newYRotation, currentRotation.z);
+            Vector3 newPosition = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, newZPosition);
+            Camera.main.transform.rotation = newRotation;
+            Camera.main.transform.position = newPosition;
+        }
     
     }
 
