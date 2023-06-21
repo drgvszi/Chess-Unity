@@ -1,1 +1,2 @@
-Chess game
+Chess game 
+Local game for friends
