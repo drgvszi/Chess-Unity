@@ -36,8 +36,31 @@ public class Pawn : ChessPiece
         
         return avMoves;
     }
-    /*public override List<Vector2Int> SpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int> avMoves, ref List<Vector2Int>){
+    
+    public override List<Vector2Int> SpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int> avMoves, ref List<Vector2Int> movesHistory, int b_size)
+    {
         List<Vector2Int> svMoves = new List<Vector2Int>();
-        return spMoves;
-    }*/
+
+        // Check if the pawn is eligible for en passant
+        int enemyDirection = (team == 0) ? -1 : 1;
+        int prevY = currentY - enemyDirection;
+        int prev2Y = currentY - 2 * enemyDirection;
+
+        if (IsWithinBounds(currentX + 1, currentY, b_size) && board[currentX + 1, currentY] != null &&
+            board[currentX + 1, currentY].team != team && board[currentX + 1, currentY] is Pawn &&
+            movesHistory.Contains(new Vector2Int(currentX + 1, prev2Y)))
+        {
+            svMoves.Add(new Vector2Int(currentX + 1, currentY + enemyDirection));
+        }
+
+        if (IsWithinBounds(currentX - 1, currentY, b_size) && board[currentX - 1, currentY] != null &&
+            board[currentX - 1, currentY].team != team && board[currentX - 1, currentY] is Pawn &&
+            movesHistory.Contains(new Vector2Int(currentX - 1, prev2Y)))
+        {
+            svMoves.Add(new Vector2Int(currentX - 1, currentY + enemyDirection));
+        }
+
+        return svMoves;
+    }
+    
 }

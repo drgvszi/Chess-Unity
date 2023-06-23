@@ -29,5 +29,10 @@ public class Knight : ChessPiece
 
         return avMoves;
     }
+    public override List<Vector2Int> SpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int> avMoves, ref List<Vector2Int> movesHistory, int b_size)
+    {
+        List<Vector2Int> spMoves = new List<Vector2Int>();
+        return spMoves;
+    }
 }
        

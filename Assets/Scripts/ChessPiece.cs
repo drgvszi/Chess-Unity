@@ -22,8 +22,7 @@ public abstract class ChessPiece : MonoBehaviour
     private Vector3 desiredPosition;
     
     public abstract List<Vector2Int> AvailableMoves(ref ChessPiece[,] board, int b_size);
-    //public abstract List<Vector2Int> SpecialMoves(ref ChessPiece[,] board, int b_size, List<Vector2Int> avMoves);
-    
+    public abstract  List<Vector2Int> SpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int> avMoves, ref List<Vector2Int> movesHistory, int b_size);
     protected bool IsWithinBounds(int x, int y, int b_size)
     {
         return x >= 0 && x < b_size && y >= 0 && y < b_size;

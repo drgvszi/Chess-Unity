@@ -15,35 +15,49 @@
         public Material[] teamMat;
         
         //Game Logic
-        private const int white = 0;
-        private const int black = 1;
-        private const int boardSize = 8;
-        private float tileSize = 5.0f;
+        const int white = 0;
+        const int black = 1;
+        const int boardSize = 8;
+        const float tileSize = 5.0f;
         private bool isWhiteTurn;
         private bool winCondition;
         private bool gameStarted;
         private ChessPiece currentMove;
-        private List<ChessPiece> deadW = new List<ChessPiece>();
-        private List<ChessPiece> deadB = new List<ChessPiece>();
-        private Vector3 DeathWhitePosition = new Vector3(-1.5f, 1f, -4.5f);
-        private Vector3 DeathBlackPosition = new Vector3(36.5f, 1f, 39.5f);
-        private GameObject[,] boardArray= new GameObject[boardSize, boardSize];
-        private ChessPiece[,] chessPieces = new ChessPiece[boardSize, boardSize];
-        private List<Vector2Int> availableMoves = new List<Vector2Int>();
-        private List<Vector2Int> filteredMoves = new List<Vector2Int>();
+        private List<ChessPiece> deadW;
+        private List<ChessPiece> deadB;
+        private Vector3 DeathWhitePosition;
+        private Vector3 DeathBlackPosition;
+        private GameObject[,] boardArray;
+        private ChessPiece[,] chessPieces;
+        private List<Vector2Int> availableMoves;
+        private List<Vector2Int> specialMoves;
+        private List<Vector2Int> filteredMoves;
+        private List<Vector2Int> movesHistory;
         public TextMeshProUGUI resultText;
         public TextMeshProUGUI statusText;
         public TextMeshProUGUI updateTurnText;
-    
+        public TextMeshProUGUI movesHistoryText;
+        string[] letters = new string[]{"A", "B", "C", "D", "E", "F", "G", "H" };
         //Camera movement
-        private bool isCameraRotated = false;
-        private bool autoChangeCam = false;
-
+        private bool isCameraRotated;
+        private bool autoChangeCam;
 
         //Base Unity methods
         void Start()
-        {
+        {   
             gameStarted = false;
+            isCameraRotated = false;
+            autoChangeCam = false;
+            deadW = new List<ChessPiece>();
+            deadB = new List<ChessPiece>();
+            DeathWhitePosition = new Vector3(-1.5f, 1f, -4.5f);
+            DeathBlackPosition = new Vector3(36.5f, 1f, 39.5f);
+            boardArray= new GameObject[boardSize, boardSize];
+            chessPieces = new ChessPiece[boardSize, boardSize];
+            availableMoves = new List<Vector2Int>();
+            specialMoves = new List<Vector2Int>();
+            filteredMoves = new List<Vector2Int>();
+            movesHistory = new List<Vector2Int>();
         }
 
         void Update()
@@ -184,6 +198,7 @@
             DeathWhitePosition = new Vector3(-1.5f, 1f, -5f);
             DeathBlackPosition = new Vector3(36.5f, 1f, 40f);
             availableMoves.Clear();
+            specialMoves.Clear();
             resultText.gameObject.SetActive(false);
             currentMove = null;
             ClearBoardArray();
@@ -427,34 +442,42 @@
 
             return new Vector2Int(-1, -1); 
         }
-
+        
+        public void AddToHistory(Vector2Int startPos, Vector2Int endPos)
+        {
+            movesHistory.Add(startPos);
+            movesHistory.Add(endPos);
+            movesHistoryText.text = $"{letters[startPos.x]}{startPos.y + 1} -> {letters[endPos.x]}{endPos.y + 1}";
+            Debug.Log($"{letters[startPos.x]}{startPos.y + 1} -> {letters[endPos.x]}{endPos.y + 1}");
+        }
         public bool MakeMove(ChessPiece chessPiece, int targetX, int targetY)
         {
             
+            Vector2Int previousPosition = new Vector2Int(chessPiece.currentX, chessPiece.currentY);
+            Vector2Int nextPosition = new Vector2Int(targetX,targetY);
             if (winCondition)
             {
                 Debug.Log("The game is already over. No more moves can be made.");
                 return false;
             }
             
-            if (!ContainsValidMove(ref availableMoves, new Vector2Int(targetX, targetY)))
+            if (!ContainsValidMove(ref availableMoves, nextPosition))
                 return false;
 
             if (!IsValidPosition(targetX, targetY))
                 return false;
 
-            Vector2Int previousPosition = new Vector2Int(chessPiece.currentX, chessPiece.currentY);
+           
             ChessPiece targetPiece = chessPieces[targetX, targetY];
-            
             if (targetPiece != null)
             {
                 if (chessPiece.team == targetPiece.team)
                     return false;
                 KillThePiece(targetPiece);
             }
-            
             MovePiece(chessPiece, targetX, targetY);
             UpdatePiecePosition(chessPiece, targetX, targetY);
+            AddToHistory(previousPosition, nextPosition);
             UpdateTurn();
             if (autoChangeCam)
                 ChangeTheView();
@@ -533,6 +556,7 @@
         //Visual
         private void UpdateUI()
         {   
+            
             int opponentTeam = isWhiteTurn ? white : black;
             bool isCheck = IsCheck(opponentTeam);
             bool isCheckmate = IsCheckmate();
